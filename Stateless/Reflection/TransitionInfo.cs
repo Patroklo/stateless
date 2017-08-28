@@ -16,6 +16,6 @@ namespace Stateless.Reflection
         /// Method descriptions of the guard conditions.
         /// Returns a non-null but empty list if there are no guard conditions
         /// </summary>
-        public IEnumerable<InvocationInfo> GuardConditionsMethodDescriptions;
+        public IEnumerable<InvocationInfo> GuardConditionsMethodDescriptions { get; set; }
     }
 }

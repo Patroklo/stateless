@@ -48,9 +48,7 @@
   <ItemGroup>
     <Compile Include="ActivateActionBehaviour.cs" />
     <Compile Include="DeactivateActionBehaviour.cs" />
-    <Compile Include="DotGraph\DotGraphFormatter.cs" />
     <Compile Include="DynamicTriggerBehaviour.cs" />
-    <Compile Include="Enforce.cs" />
     <Compile Include="EntryActionBehaviour.cs" />
     <Compile Include="ExitActionBehaviour.cs" />
     <Compile Include="GuardCondition.cs" />
@@ -62,8 +60,10 @@
     <Compile Include="ParameterConversionResources.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionExtensions.cs" />
+    <Compile Include="Reflection\ActionInfo.cs" />
     <Compile Include="Reflection\DynamicTransitionInfo.cs" />
     <Compile Include="Reflection\FixedTransitionInfo.cs" />
+    <Compile Include="Reflection\IgnoredTransitionInfo.cs" />
     <Compile Include="Reflection\InvocationInfo.cs" />
     <Compile Include="Reflection\StateInfo.cs" />
     <Compile Include="Reflection\StateMachineInfo.cs" />

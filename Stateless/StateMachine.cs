@@ -35,8 +35,17 @@ namespace Stateless
         /// <param name="stateMutator">An action that will be called to write new state values.</param>
         public StateMachine(Func<TState> stateAccessor, Action<TState> stateMutator) : this()
         {
-            _stateAccessor = Enforce.ArgumentNotNull(stateAccessor, nameof(stateAccessor));
-            _stateMutator = Enforce.ArgumentNotNull(stateMutator, nameof(stateMutator));
+            if (stateAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(stateAccessor));
+            }
+            _stateAccessor = stateAccessor;
+
+            if (stateMutator == null)
+            {
+                throw new ArgumentNullException(nameof(stateMutator));
+            }
+            _stateMutator = stateMutator;
         }
 
         /// <summary>
@@ -169,7 +178,7 @@ namespace Stateless
         /// not allow the trigger to be fired.</exception>
         public void Fire<TArg0>(TriggerWithParameters<TArg0> trigger, TArg0 arg0)
         {
-            Enforce.ArgumentNotNull(trigger, nameof(trigger));
+            if (trigger == null) throw new ArgumentNullException(nameof(trigger));
             InternalFire(trigger.Trigger, arg0);
         }
 
@@ -188,7 +197,7 @@ namespace Stateless
         /// not allow the trigger to be fired.</exception>
         public void Fire<TArg0, TArg1>(TriggerWithParameters<TArg0, TArg1> trigger, TArg0 arg0, TArg1 arg1)
         {
-            Enforce.ArgumentNotNull(trigger, nameof(trigger));
+            if (trigger == null) throw new ArgumentNullException(nameof(trigger));
             InternalFire(trigger.Trigger, arg0, arg1);
         }
 
@@ -209,13 +218,13 @@ namespace Stateless
         /// not allow the trigger to be fired.</exception>
         public void Fire<TArg0, TArg1, TArg2>(TriggerWithParameters<TArg0, TArg1, TArg2> trigger, TArg0 arg0, TArg1 arg1, TArg2 arg2)
         {
-            Enforce.ArgumentNotNull(trigger, nameof(trigger));
+            if (trigger == null) throw new ArgumentNullException(nameof(trigger));
             InternalFire(trigger.Trigger, arg0, arg1, arg2);
         }
 
         /// <summary>
         /// Activates current state. Actions associated with activating the currrent state
-        /// will be invoked. The activation is idempotent and subsequent activation of the same current state 
+        /// will be invoked. The activation is idempotent and subsequent activation of the same current state
         /// will not lead to re-execution of activation callbacks.
         /// </summary>
         public void Activate()
@@ -226,7 +235,7 @@ namespace Stateless
 
         /// <summary>
         /// Deactivates current state. Actions associated with deactivating the currrent state
-        /// will be invoked. The deactivation is idempotent and subsequent deactivation of the same current state 
+        /// will be invoked. The deactivation is idempotent and subsequent deactivation of the same current state
         /// will not lead to re-execution of deactivation callbacks.
         /// </summary>
         public void Deactivate()
@@ -311,7 +320,7 @@ namespace Stateless
         /// <param name="unhandledTriggerAction">An action to call when an unhandled trigger is fired.</param>
         public void OnUnhandledTrigger(Action<TState, TTrigger> unhandledTriggerAction)
         {
-            if (unhandledTriggerAction == null) throw new ArgumentNullException("unhandledTriggerAction");
+            if (unhandledTriggerAction == null) throw new ArgumentNullException(nameof(unhandledTriggerAction));
             _unhandledTriggerAction = new UnhandledTriggerAction.Sync((s, t, c) => unhandledTriggerAction(s, t));
         }
 
@@ -322,7 +331,7 @@ namespace Stateless
         /// <param name="unhandledTriggerAction">An action to call when an unhandled trigger is fired.</param>
         public void OnUnhandledTrigger(Action<TState, TTrigger, ICollection<string>> unhandledTriggerAction)
         {
-            if (unhandledTriggerAction == null) throw new ArgumentNullException("unhandledTriggerAction");
+            if (unhandledTriggerAction == null) throw new ArgumentNullException(nameof(unhandledTriggerAction));
             _unhandledTriggerAction = new UnhandledTriggerAction.Sync(unhandledTriggerAction);
         }
 
@@ -416,8 +425,6 @@ namespace Stateless
 
         void DefaultUnhandledTriggerAction(TState state, TTrigger trigger, ICollection<string> unmetGuardConditions)
         {
-            var source = state;
-            var representativeState = GetRepresentation(source);
 
             if (unmetGuardConditions?.Any() ?? false)
                 throw new InvalidOperationException(
@@ -439,7 +446,7 @@ namespace Stateless
         /// of the transition.</param>
         public void OnTransitioned(Action<Transition> onTransitionAction)
         {
-            if (onTransitionAction == null) throw new ArgumentNullException("onTransitionAction");
+            if (onTransitionAction == null) throw new ArgumentNullException(nameof(onTransitionAction));
             _onTransitionedEvent.Register(onTransitionAction);
         }
     }

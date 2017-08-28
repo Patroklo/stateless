@@ -22,10 +22,14 @@ namespace Stateless
             /// <param name="argumentTypes">The argument types expected by the trigger.</param>
             public TriggerWithParameters(TTrigger underlyingTrigger, params Type[] argumentTypes)
             {
-                Enforce.ArgumentNotNull(argumentTypes, nameof(argumentTypes));
-
                 _underlyingTrigger = underlyingTrigger;
+
+                if (argumentTypes == null)
+                {
+                    throw new ArgumentNullException(nameof(argumentTypes));
+                }
                 _argumentTypes = argumentTypes;
+
             }
 
             /// <summary>
@@ -40,7 +44,7 @@ namespace Stateless
             /// <param name="args"></param>
             public void ValidateParameters(object[] args)
             {
-                Enforce.ArgumentNotNull(args, nameof(args));
+                if (args == null) throw new ArgumentNullException(nameof(args));
 
                 ParameterConversion.Validate(args, _argumentTypes);
             }

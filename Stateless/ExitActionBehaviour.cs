@@ -17,7 +17,11 @@ namespace Stateless
 
             protected ExitActionBehavior(Reflection.InvocationInfo actionDescription)
             {
-                _actionDescription = Enforce.ArgumentNotNull(actionDescription, nameof(actionDescription));
+                if (actionDescription == null)
+                {
+                    throw new ArgumentNullException(nameof(actionDescription));
+                }
+                _actionDescription = actionDescription;
             }
 
             internal Reflection.InvocationInfo Description => _actionDescription;
