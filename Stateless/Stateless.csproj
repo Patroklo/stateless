@@ -51,6 +51,14 @@
     <Compile Include="DynamicTriggerBehaviour.cs" />
     <Compile Include="EntryActionBehaviour.cs" />
     <Compile Include="ExitActionBehaviour.cs" />
+    <Compile Include="Graph\Decision.cs" />
+    <Compile Include="Graph\IGraphStyle.cs" />
+    <Compile Include="Graph\State.cs" />
+    <Compile Include="Graph\StateGraph.cs" />
+    <Compile Include="Graph\SuperState.cs" />
+    <Compile Include="Graph\Transition.cs" />
+    <Compile Include="Graph\UmlDotGraph.cs" />
+    <Compile Include="Graph\UmlDotGraphStyle.cs" />
     <Compile Include="GuardCondition.cs" />
     <Compile Include="IgnoredTriggerBehaviour.cs" />
     <Compile Include="InternalActionBehaviour.cs" />
