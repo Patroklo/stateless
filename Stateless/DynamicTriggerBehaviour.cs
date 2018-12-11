@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Stateless
 {
@@ -16,17 +13,14 @@ namespace Stateless
                 TransitionGuard transitionGuard, Reflection.DynamicTransitionInfo info)
                 : base(trigger, transitionGuard)
             {
-                if (destination == null)
-                {
+                if (destination != null)
+                    _destination = destination;
+                else
                     throw new ArgumentNullException(nameof(destination));
-                }
-                _destination = destination;
-
-                if (info == null)
-                {
+                if (info != null)
+                    TransitionInfo = info;
+                else
                     throw new ArgumentNullException(nameof(info));
-                }
-                TransitionInfo = info;
             }
 
             public override bool ResultsInTransitionFrom(TState source, object[] args, out TState destination)

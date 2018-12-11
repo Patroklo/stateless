@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Stateless
 {
@@ -23,13 +20,10 @@ namespace Stateless
             public TriggerWithParameters(TTrigger underlyingTrigger, params Type[] argumentTypes)
             {
                 _underlyingTrigger = underlyingTrigger;
-
-                if (argumentTypes == null)
-                {
+                if (argumentTypes != null)
+                    _argumentTypes = argumentTypes;
+                else
                     throw new ArgumentNullException(nameof(argumentTypes));
-                }
-                _argumentTypes = argumentTypes;
-
             }
 
             /// <summary>

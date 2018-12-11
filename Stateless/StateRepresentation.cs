@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Stateless
 {
@@ -11,29 +10,17 @@ namespace Stateless
         {
             readonly TState _state;
 
-            readonly IDictionary<TTrigger, ICollection<TriggerBehaviour>> _triggerBehaviours =
-                new Dictionary<TTrigger, ICollection<TriggerBehaviour>>();
-
-            internal IDictionary<TTrigger, ICollection<TriggerBehaviour>> TriggerBehaviours { get { return _triggerBehaviours; } }
-
-            readonly ICollection<EntryActionBehavior> _entryActions = new List<EntryActionBehavior>();
-            internal ICollection<EntryActionBehavior> EntryActions { get { return _entryActions; } }
-
-            readonly ICollection<ExitActionBehavior> _exitActions = new List<ExitActionBehavior>();
-            internal ICollection<ExitActionBehavior> ExitActions { get { return _exitActions; } }
-
-            readonly ICollection<ActivateActionBehaviour> _activateActions = new List<ActivateActionBehaviour>();
-            internal ICollection<ActivateActionBehaviour> ActivateActions { get { return _activateActions; } }
-
-            readonly ICollection<DeactivateActionBehaviour> _deactivateActions = new List<DeactivateActionBehaviour>();
-            internal ICollection<DeactivateActionBehaviour> DeactivateActions { get { return _deactivateActions; } }
-
-            readonly ICollection<InternalActionBehaviour> _internalActions = new List<InternalActionBehaviour>();
+            internal IDictionary<TTrigger, ICollection<TriggerBehaviour>> TriggerBehaviours { get; } = new Dictionary<TTrigger, ICollection<TriggerBehaviour>>();
+            internal ICollection<EntryActionBehavior> EntryActions { get; } = new List<EntryActionBehavior>();
+            internal ICollection<ExitActionBehavior> ExitActions { get; } = new List<ExitActionBehavior>();
+            internal ICollection<ActivateActionBehaviour> ActivateActions { get; } = new List<ActivateActionBehaviour>();
+            internal ICollection<DeactivateActionBehaviour> DeactivateActions { get; } = new List<DeactivateActionBehaviour>();
 
             StateRepresentation _superstate; // null
             bool active;
 
             readonly ICollection<StateRepresentation> _substates = new List<StateRepresentation>();
+            public TState InitialTransitionTarget { get; private set; } = default(TState);
 
             public StateRepresentation(TState state)
             {
@@ -45,33 +32,40 @@ namespace Stateless
                 return _substates;
             }
 
-            public bool CanHandle(TTrigger trigger)
+            public bool CanHandle(TTrigger trigger, params object[] args)
             {
                 TriggerBehaviourResult unused;
-                return TryFindHandler(trigger, out unused);
+                return TryFindHandler(trigger, args, out unused);
             }
 
-            public bool TryFindHandler(TTrigger trigger, out TriggerBehaviourResult handler)
+            public bool TryFindHandler(TTrigger trigger, object[] args, out TriggerBehaviourResult handler)
             {
-                return (TryFindLocalHandler(trigger, out handler) ||
-                    (Superstate != null && Superstate.TryFindHandler(trigger, out handler)));
+                return (TryFindLocalHandler(trigger, args, out handler) ||
+                    (Superstate != null && Superstate.TryFindHandler(trigger, args, out handler)));
             }
 
-            bool TryFindLocalHandler(TTrigger trigger, out TriggerBehaviourResult handlerResult)
+            bool TryFindLocalHandler(TTrigger trigger, object[] args, out TriggerBehaviourResult handlerResult)
             {
+                // Get list of candidate trigger handlers
                 ICollection<TriggerBehaviour> possible;
-                if (!_triggerBehaviours.TryGetValue(trigger, out possible))
+                if (!TriggerBehaviours.TryGetValue(trigger, out possible))
                 {
                     handlerResult = null;
                     return false;
                 }
 
-                // Guard functions executed
+                // Remove those that have unmet guard conditions
+                // Guard functions are executed here
                 var actual = possible
-                    .Select(h => new TriggerBehaviourResult(h, h.UnmetGuardConditions));
+                    .Select(h => new TriggerBehaviourResult(h, h.UnmetGuardConditions(args)))
+                    .Where(g => g.UnmetGuardConditions.Count == 0)
+                    .ToArray();
 
+                // Find a handler for the trigger
                 handlerResult = TryFindLocalHandlerResult(trigger, actual, r => !r.UnmetGuardConditions.Any())
                     ?? TryFindLocalHandlerResult(trigger, actual, r => r.UnmetGuardConditions.Any());
+
+                if (handlerResult == null) return false;
 
                 return !handlerResult.UnmetGuardConditions.Any();
             }
@@ -91,38 +85,27 @@ namespace Stateless
             }
             public void AddActivateAction(Action action, Reflection.InvocationInfo activateActionDescription)
             {
-                _activateActions.Add(new ActivateActionBehaviour.Sync(_state, action, activateActionDescription));
+                ActivateActions.Add(new ActivateActionBehaviour.Sync(_state, action, activateActionDescription));
             }
 
             public void AddDeactivateAction(Action action, Reflection.InvocationInfo deactivateActionDescription)
             {
-                _deactivateActions.Add(new DeactivateActionBehaviour.Sync(_state, action, deactivateActionDescription));
+                DeactivateActions.Add(new DeactivateActionBehaviour.Sync(_state, action, deactivateActionDescription));
             }
 
             public void AddEntryAction(TTrigger trigger, Action<Transition, object[]> action, Reflection.InvocationInfo entryActionDescription)
             {
-                _entryActions.Add(new EntryActionBehavior.SyncFrom<TTrigger>(trigger, action, entryActionDescription));
+                EntryActions.Add(new EntryActionBehavior.SyncFrom<TTrigger>(trigger, action, entryActionDescription));
             }
 
             public void AddEntryAction(Action<Transition, object[]> action, Reflection.InvocationInfo entryActionDescription)
             {
-                _entryActions.Add(new EntryActionBehavior.Sync(action, entryActionDescription));
+                EntryActions.Add(new EntryActionBehavior.Sync(action, entryActionDescription));
             }
 
             public void AddExitAction(Action<Transition> action, Reflection.InvocationInfo exitActionDescription)
             {
-                _exitActions.Add(new ExitActionBehavior.Sync(action, exitActionDescription));
-            }
-
-            internal void AddInternalAction(TTrigger trigger, Action<Transition, object[]> action)
-            {
-                if (action == null) throw new ArgumentNullException(nameof(action));
-
-                _internalActions.Add(new InternalActionBehaviour.Sync((t, args) =>
-                {
-                    if (t.Trigger.Equals(trigger))
-                        action(t, args);
-                }));
+                ExitActions.Add(new ExitActionBehavior.Sync(action, exitActionDescription));
             }
 
             public void Activate()
@@ -151,13 +134,13 @@ namespace Stateless
 
             void ExecuteActivationActions()
             {
-                foreach (var action in _activateActions)
+                foreach (var action in ActivateActions)
                     action.Execute();
             }
 
             void ExecuteDeactivationActions()
             {
-                foreach (var action in _deactivateActions)
+                foreach (var action in DeactivateActions)
                     action.Execute();
             }
 
@@ -178,7 +161,7 @@ namespace Stateless
                 }
             }
 
-            public void Exit(Transition transition)
+            public Transition Exit(Transition transition)
             {
                 if (transition.IsReentry)
                 {
@@ -190,36 +173,55 @@ namespace Stateless
                     ExecuteDeactivationActions();
                     ExecuteExitActions(transition);
 
+                    // Must check if there is a superstate, and if we are leaving that superstate
                     if (_superstate != null)
-                        _superstate.Exit(transition);
+                    {
+                        // Check if destination is within the state list
+                        if (IsIncludedIn(transition.Destination))
+                        {
+                            // Destination state is within the list, exit first superstate only if it is NOT the the first
+                            if (!_superstate.UnderlyingState.Equals(transition.Destination))
+                            {
+                                return _superstate.Exit(transition);
+                            }
+                        }
+                        else
+                        {
+                            // Exit the superstate as well
+                            return _superstate.Exit(transition);
+                        }
+                    }
                 }
+                return transition;
             }
 
             void ExecuteEntryActions(Transition transition, object[] entryArgs)
             {
-                foreach (var action in _entryActions)
+                foreach (var action in EntryActions)
                     action.Execute(transition, entryArgs);
             }
 
             void ExecuteExitActions(Transition transition)
             {
-                foreach (var action in _exitActions)
+                foreach (var action in ExitActions)
                     action.Execute(transition);
             }
             internal void InternalAction(Transition transition, object[] args)
             {
-                var possibleActions = new List<InternalActionBehaviour>();
+                InternalTriggerBehaviour.Sync internalTransition = null;
 
                 // Look for actions in superstate(s) recursivly until we hit the topmost superstate, or we actually find some trigger handlers.
                 StateRepresentation aStateRep = this;
                 while (aStateRep != null)
                 {
                     TriggerBehaviourResult result;
-
-                    if (aStateRep.TryFindLocalHandler(transition.Trigger, out result))
+                    if (aStateRep.TryFindLocalHandler(transition.Trigger, args, out result))
                     {
-                        // Trigger handler(s) found in this state
-                        possibleActions.AddRange(aStateRep._internalActions);
+                        // Trigger handler found in this state
+                        if (result.Handler is InternalTriggerBehaviour.Async)
+                            throw new InvalidOperationException("Running Async internal actions in synchronous mode is not allowed");
+
+                        internalTransition = result.Handler as InternalTriggerBehaviour.Sync;
                         break;
                     }
                     // Try to look for trigger handlers in superstate (if it exists)
@@ -227,19 +229,16 @@ namespace Stateless
                 }
 
                 // Execute internal transition event handler
-                foreach (var action in possibleActions)
-                {
-                    action.Execute(transition, args);
-                }
+                if (internalTransition == null) throw new ArgumentNullException("The configuration is incorrect, no action assigned to this internal transition.");
+                internalTransition.InternalAction(transition, args);
             }
-
             public void AddTriggerBehaviour(TriggerBehaviour triggerBehaviour)
             {
                 ICollection<TriggerBehaviour> allowed;
-                if (!_triggerBehaviours.TryGetValue(triggerBehaviour.Trigger, out allowed))
+                if (!TriggerBehaviours.TryGetValue(triggerBehaviour.Trigger, out allowed))
                 {
                     allowed = new List<TriggerBehaviour>();
-                    _triggerBehaviours.Add(triggerBehaviour.Trigger, allowed);
+                    TriggerBehaviours.Add(triggerBehaviour.Trigger, allowed);
                 }
                 allowed.Add(triggerBehaviour);
             }
@@ -281,20 +280,32 @@ namespace Stateless
                     (_superstate != null && _superstate.IsIncludedIn(state));
             }
 
-            public IEnumerable<TTrigger> PermittedTriggers
+			public IEnumerable<TTrigger> PermittedTriggers
+			{
+				get
+				{
+					return GetPermittedTriggers();
+				}
+			}
+
+            public IEnumerable<TTrigger> GetPermittedTriggers(params object[] args)
             {
-                get
-                {
-                    var result = _triggerBehaviours
-                        .Where(t => t.Value.Any(a => !a.UnmetGuardConditions.Any()))
-                        .Select(t => t.Key);
+                var result = TriggerBehaviours
+                    .Where(t => t.Value.Any(a => !a.UnmetGuardConditions(args).Any()))
+                    .Select(t => t.Key);
 
-                    if (Superstate != null)
-                        result = result.Union(Superstate.PermittedTriggers);
+                if (Superstate != null)
+                    result = result.Union(Superstate.GetPermittedTriggers(args));
 
-                    return result.ToArray();
-                }
+                return result.ToArray();
             }
+
+            internal void SetInitialTransition(TState state)
+            {
+                InitialTransitionTarget = state;
+                HasInitialTransition = true;
+            }
+            public bool HasInitialTransition { get; private set; }
         }
     }
 }

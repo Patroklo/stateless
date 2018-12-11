@@ -30,8 +30,8 @@ namespace Stateless.Graph
             if ((stateInfo.EntryActions.Count > 0) || (stateInfo.ExitActions.Count > 0))
             {
                 label.Append("\\n----------");
-                label.Append(string.Concat(stateInfo.EntryActions.Select(act => "\\nentry / " + act)));
-                label.Append(string.Concat(stateInfo.ExitActions.Select(act => "\\nexit / " + act)));
+                label.Append(string.Concat(stateInfo.EntryActions.Select(act => "\\nentry / " + act).ToArray()));
+                label.Append(string.Concat(stateInfo.ExitActions.Select(act => "\\nexit / " + act).ToArray()));
             }
 
             stateRepresentationString = "\n"

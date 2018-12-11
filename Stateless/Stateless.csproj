@@ -90,6 +90,7 @@
     <Compile Include="TaskResult.cs" />
     <Compile Include="Transition.cs" />
     <Compile Include="TransitionGuard.cs" />
+    <Compile Include="ReentryTriggerBehaviour.cs" />
     <Compile Include="TransitioningTriggerBehaviour.cs" />
     <Compile Include="TriggerBehaviour.cs" />
     <Compile Include="TriggerBehaviourResult.cs" />

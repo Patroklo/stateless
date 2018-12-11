@@ -1,9 +1,18 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stateless", "Stateless\Stateless.csproj", "{BE6D8E33-6AF4-49AE-ADEE-3E31BAE8BF75}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{8DE7A8AE-D87D-46A0-9757-88BA4AF7EDA5}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		CHANGELOG.md = CHANGELOG.md
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stateless.Tests", "test\Stateless.Tests\Stateless.Tests.csproj", "{9FCDB05C-785E-4E02-8C0D-8C0AA5371A2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +24,14 @@ Global
 		{BE6D8E33-6AF4-49AE-ADEE-3E31BAE8BF75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE6D8E33-6AF4-49AE-ADEE-3E31BAE8BF75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE6D8E33-6AF4-49AE-ADEE-3E31BAE8BF75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FCDB05C-785E-4E02-8C0D-8C0AA5371A2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FCDB05C-785E-4E02-8C0D-8C0AA5371A2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FCDB05C-785E-4E02-8C0D-8C0AA5371A2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A73ADDC-8150-4AFC-AAF0-BA8B4D7A94D7}
 	EndGlobalSection
 EndGlobal
