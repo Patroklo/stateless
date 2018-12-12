@@ -1,10 +1,6 @@
 ﻿#if TASKS
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Stateless
@@ -24,8 +20,7 @@ namespace Stateless
             {
                 if (entryAction == null) throw new ArgumentNullException(nameof(entryAction));
 
-                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour(trigger, guard));
-                _representation.AddInternalAction(trigger, (t, args) => entryAction(t));
+                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour.Async(trigger, guard, (t, args) => entryAction(t)));
                 return this;
             }
 
@@ -40,8 +35,7 @@ namespace Stateless
             {
                 if (internalAction == null) throw new ArgumentNullException(nameof(internalAction));
 
-                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour(trigger, guard));
-                _representation.AddInternalAction(trigger, (t, args) => internalAction());
+                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour.Async(trigger, guard, (t, args) => internalAction()));
                 return this;
             }
 
@@ -57,8 +51,7 @@ namespace Stateless
             {
                 if (internalAction == null) throw new ArgumentNullException(nameof(internalAction));
 
-                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour(trigger, guard));
-                _representation.AddInternalAction(trigger, (t, args) => internalAction(t));
+                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour.Async(trigger, guard, (t, args) => internalAction(t)));
                 return this;
             }
 
@@ -74,8 +67,7 @@ namespace Stateless
             {
                 if (internalAction == null) throw new ArgumentNullException(nameof(internalAction));
 
-                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour(trigger.Trigger, guard));
-                _representation.AddInternalAction(trigger.Trigger, (t, args) => internalAction(ParameterConversion.Unpack<TArg0>(args, 0), t));
+                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour.Async(trigger.Trigger, guard, (t, args) => internalAction(ParameterConversion.Unpack<TArg0>(args, 0), t)));
                 return this;
             }
 
@@ -92,10 +84,9 @@ namespace Stateless
             {
                 if (internalAction == null) throw new ArgumentNullException(nameof(internalAction));
 
-                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour(trigger.Trigger, guard));
-                _representation.AddInternalAction(trigger.Trigger, (t, args) => internalAction(
+                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour.Async(trigger.Trigger, guard, (t, args) => internalAction(
                     ParameterConversion.Unpack<TArg0>(args, 0),
-                    ParameterConversion.Unpack<TArg1>(args, 1), t));
+                    ParameterConversion.Unpack<TArg1>(args, 1), t)));
                 return this;
             }
 
@@ -113,11 +104,10 @@ namespace Stateless
             {
                 if (internalAction == null) throw new ArgumentNullException(nameof(internalAction));
 
-                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour(trigger.Trigger, guard));
-                _representation.AddInternalAction(trigger.Trigger, (t, args) => internalAction(
+                _representation.AddTriggerBehaviour(new InternalTriggerBehaviour.Async(trigger.Trigger, guard, (t, args) => internalAction(
                     ParameterConversion.Unpack<TArg0>(args, 0),
                     ParameterConversion.Unpack<TArg1>(args, 1),
-                    ParameterConversion.Unpack<TArg2>(args, 2), t));
+                    ParameterConversion.Unpack<TArg2>(args, 2), t)));
                 return this;
             }
 

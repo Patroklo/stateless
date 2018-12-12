@@ -22,8 +22,7 @@ namespace Stateless.Reflection
                 foreach (var item in triggerBehaviours.Value)
                 {
                     var behaviour = item as StateMachine<TState, TTrigger>.IgnoredTriggerBehaviour;
-                    if (behaviour != null)
-                    {
+                    if (behaviour!=null) {
                         ignoredTriggers.Add(IgnoredTransitionInfo.Create(behaviour));
                     }
                 }
@@ -55,6 +54,11 @@ namespace Stateless.Reflection
                 foreach (var item in triggerBehaviours.Value.Where(behaviour => (behaviour is StateMachine<TState, TTrigger>.TransitioningTriggerBehaviour)))
                 {
                     var destinationInfo = lookupState(((StateMachine<TState, TTrigger>.TransitioningTriggerBehaviour)item).Destination);
+                    fixedTransitions.Add(FixedTransitionInfo.Create(item, destinationInfo));
+                }
+                foreach (var item in triggerBehaviours.Value.Where(behaviour => (behaviour is StateMachine<TState, TTrigger>.ReentryTriggerBehaviour)))
+                {
+                    var destinationInfo = lookupState(((StateMachine<TState, TTrigger>.ReentryTriggerBehaviour)item).Destination);
                     fixedTransitions.Add(FixedTransitionInfo.Create(item, destinationInfo));
                 }
                 //Then add all the internal transitions
@@ -161,12 +165,7 @@ namespace Stateless.Reflection
         /// <summary> 
         /// Transitions defined for this state.
         /// </summary>
-        public IEnumerable<TransitionInfo> Transitions {
-            get
-            {
-                return FixedTransitions.Cast<TransitionInfo>().Concat(DynamicTransitions.Cast<TransitionInfo>());
-            }
-        }
+        public IEnumerable<TransitionInfo> Transitions { get { return FixedTransitions.Cast<TransitionInfo>().Concat<TransitionInfo>(DynamicTransitions.Cast<TransitionInfo>()); } }
 
         /// <summary>
         /// Transitions defined for this state.
